@@ -8,6 +8,13 @@ Copyright 2020, Emad Kasaeyan Naeini
 Licence: MIT, see LICENCE for more details.
 
 """
+import numpy as np
+import pandas as pd
+import csv
+from itertools import islice
+import os, time, glob
+import heartpy as hp
+
 def peakDetection(signal, sr=512, wd={}):
     # Get peak location indices and their probabilities
     peaks, probs = dt.find_peaks(signal)
@@ -20,7 +27,7 @@ def peakDetection(signal, sr=512, wd={}):
 
 def featureExtraction(ecg, sr=512, freq_method='welch', clean_rr_method='quotient-filter', m={}, wd={}):
     t_start = time.perf_counter()
-    detect_peaks(ecg, sr=sr, wd=wd)
+    peakDetection(ecg, sr=sr, wd=wd)
     wd = hp.analysis.calc_rr(wd['peaklist'], sample_rate=sr, working_data=wd)
     wd = hp.peakdetection.check_peaks(wd['RR_list'], wd['peaklist'], wd['ybeat'], reject_segmentwise=True, working_data=wd)
     wd = hp.analysis.clean_rr_intervals(wd, method=clean_rr_method)

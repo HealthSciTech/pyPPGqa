@@ -8,9 +8,17 @@ Copyright 2020, Emad Kasaeyan Naeini
 Licence: MIT, see LICENCE for more details.
 
 """
+
+import gc, os, time
+import csv
+from itertools import islice
+import numpy as np
 def sh2ecg(sub, be=3, fi=None):
-    start = timeit.default_timer()
+    start = time.perf_counter()
     sh3 = 'data/{}/ecg/'.format(sub)
+    if not os.path.isdir(sh3):
+        os.makedirs(sh3)
+        print('ecg directory created for {}'.format(sub))
     src = open(sh3+'{}_Shimmer3.csv'.format(sub))
     with open(sh3+'{}_ecg.csv'.format(sub),'a') as dst:
         newFileWriter = csv.writer(dst)
@@ -23,11 +31,10 @@ def sh2ecg(sub, be=3, fi=None):
     gc.collect()
     src.close()
 
-    stop = timeit.default_timer()
-    print('Time: ', stop-start)
+    print('\nFinished sh2ecg for user {} in {:.8f} sec'.format(sub, time.perf_counter()-start))
 
 def ecgSegmentize(subs, sr=512):
-    t_start = time.perf_counter()
+    t1 = time.perf_counter()
     hrv_files = sorted(glob.glob('data/all5min/hrv5min/*'))
     ecg_files = dict.fromkeys(subs)
     for sub in subs:
@@ -61,4 +68,4 @@ def ecgSegmentize(subs, sr=512):
                 signal = signal.tolist()
                 newFileWriter.writerow([ts_hrv]+signal)
         
-    print('\nFinished Segmenting in 5 minutes for user {} in {:.8s} sec'.format(sub, time.perf_counter()-t1))
+    print('\nFinished Segmenting in 5 minutes for user {} in {:.8f} sec'.format(sub, time.perf_counter()-t1))

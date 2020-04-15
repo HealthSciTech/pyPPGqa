@@ -7,11 +7,13 @@ import heartpy as hp
 from ecg2rr import detector
 from matplotlib import pyplot as plt
 
-from .preprocessing import sh2ecg, ecgSegmentize
-from .peakdetection import peakDetection, featureExtraction
+from preprocessing import sh2ecg, ecgSegmentize
+from peakdetection import peakDetection, featureExtraction
 ###############################
 ###  General Initialization ###
 ###############################
+os.chdir('/Users/emad/Desktop/uci/papers/chase2020')
+print('Directory changed to Chase2020')
 
 # list of user ids included in analysis 
 #IDs 6,8 are not included due to lack of enough info
@@ -25,4 +27,5 @@ window_size = 60
 ws_filter = 1
 
 
-ecgSegmentize(subs, samplerate_sh)
+#Test sh2ecg()
+#sh2ecg(sub='ID39')
