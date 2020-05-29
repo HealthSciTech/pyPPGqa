@@ -13,7 +13,7 @@ from peakdetection import peakDetection, featureExtraction
 ###  General Initialization ###
 ###############################
 os.chdir('/Users/emad/Desktop/uci/papers/chase2020')
-print('Directory changed to Chase2020')
+print('Directory changed to ' + os.path.basename(os.getcwd()))
 
 # list of user ids included in analysis 
 #IDs 6,8 are not included due to lack of enough info
@@ -29,3 +29,17 @@ ws_filter = 1
 
 #Test sh2ecg()
 #sh2ecg(sub='ID39')
+
+# os.chdir('./data/all5min/5min')
+# print('Directory changed to ' + os.path.basename(os.getcwd()))
+# hrv_files = sorted(glob.glob(os.getcwd()+'/*'))
+# for i in range(len(hrv_files)):
+#     # tmp = os.path.basename(hrv_files[i])
+#     splt = hrv_files[i].split('_')
+
+#     if len(splt[1])==8:
+#         os.rename(hrv_files[i],splt[0]+'_0'+splt[1][:-7]+'p'+splt[1][-6:])
+#         # print(splt[0]+'_0'+splt[1][:-7]+'p'+splt[1][-6:])
+#     else:
+#         os.rename(hrv_files[i],splt[0]+'_'+splt[1][:-7]+'p'+splt[1][-6:])
+#         # print(splt[0]+'_'+splt[1][:-7]+'p'+splt[1][-6:])

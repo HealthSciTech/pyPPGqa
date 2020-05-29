@@ -38,7 +38,7 @@ def featureExtraction(ecg, sr=512, freq_method='welch', clean_rr_method='quotien
     print('\nFinished in {:.8s} sec'.format(time.perf_counter()-t_start))
     return wd, m
 
-def ecg2peak(sub, dt, sr=512):
+def ecg2peak5min(dt, sr=512):
     t_start = time.perf_counter()
     ecg_dir = 'data/all5min/ecg5min/'
     ecg_files = sorted(glob.glob(ecg_dir+'*'))
@@ -46,49 +46,58 @@ def ecg2peak(sub, dt, sr=512):
     ecg_hrv_dir =  'data/all5min/ecg_hrv/'
     if not os.path.isdir(peak_dir):
         os.makedirs(peak_dir)
+        print( 'Directory ' + peak_dir + ' is Created!')
     if not os.path.isdir(ecg_hrv_dir):
         os.makedirs(ecg_hrv_dir)
+        print( 'Directory ' + ecg_hrv_dir + ' is Created!')
 
     for i in range(len(ecg_files)):
         sub = os.path.basename(ecg_files[i]).split('_')[0]
-        ind = os.path.basename(ecg_files[i]).split('_')[1]
-        ecg_hrv = ecg_hrv_dir + '{}_{:02d}_hrv.csv'.format(sub,ind)
+        ind = os.path.basename(ecg_files[i]).split('_')[1][:2]
+        print(sub, ind)
+        ecg_peak = peak_dir +  '{}_{}_peak.csv'.format(sub,ind)
+        ecg_hrv = ecg_hrv_dir + '{}_{}_hrv.csv'.format(sub,ind)
         print()
         print('ECG source  --> \t', ecg_files[i])
         print('Destination --> \t', ecg_hrv)
 #         df_prv = pd.read_csv(prv_files[ind], skipinitialspace=True)
-
-        feature_cols = ['timestamp', 'ecg_hr', 'ecg_avnn', 'ecg_rmssd', 'ecg_sdnn',
-                       'ecg_lf', 'ecg_hf', 'ecg_lf/hf']
+        
+        if os.path.exists(ecg_hrv):
+            print( ecg_hrv + ' is Created!')
+            continue
+        
+        feature_cols = ['timestamp', 'ecg_hr_mean', 'ecg_nni_mean', 'ecg_rmssd', 'ecg_sdnn',
+                       'ecg_lf_fft_abs', 'ecg_hf_fft_abs', 'ecg_fft_ratio']
         df_ecgHRV = pd.DataFrame(columns=feature_cols)
+        # df_peaks = pd.DataFrame()
         src = open(ecg_files[i])
         be = 0
         fi = None
-        for line in islice(src, be, fi):
-            record = np.array([line.split(",")])
-            if len(record[0])<2:
-                ts_ecg = record[0][0].astype(np.float)
-                hrvParams = [ts_ecg]+[np.nan]*7
-            else:
-                record = np.delete(record,-1).astype(np.float)
-                ts_ecg = record[0]
-                ecg = record[1:]
-#                 ecg = hp.remove_baseline_wander(ecg, sample_rate=512)
-                # ecg = hp.scale_data(ecg)
-                wd = {}
-                m = {}
-                wd, m = emad_main(ecg, sr, freq_method='welch', clean_rr_method='quotient-filter', m=m, wd=wd)
-                hrvParams = [m['bpm'], m['ibi'], m['rmssd'], m['sdnn']]#, m['lf'], m['hf'], m['lf/hf']]
-                hrvParams = [ts_ecg]+hrvParams
-            df_ecgHRV = df_ecgHRV.append(pd.Series(hrvParams, index=df_ecgHRV.columns), ignore_index=True)
+        with open(ecg_peak,'a') as dst:
+            newFileWriter = csv.writer(dst)
+            for line in islice(src, be, fi):
+                record = np.array([line.split(",")])
+                if len(record[0])<2:
+                    ts_ecg = record[0][0].astype(np.float)
+                    peaks_list = [ts_ecg]+[np.nan]
+                    hrvParams = [ts_ecg]+[np.nan]*7
+                else:
+                    record = np.delete(record,-1).astype(np.float)
+                    ts_ecg = record[0]
+                    ecg = record[1:]
+    #                 ecg = hp.remove_baseline_wander(ecg, sample_rate=512)
+                    # ecg = hp.scale_data(ecg)
+                    wd = {}
+                    m = {}
+                    wd, m = emad_main(ecg, sr, freq_method='welch', clean_rr_method='quotient-filter', m=m, wd=wd)
+                    peaks_list = [ts_ecg]+wd['peaklist']
+                    hrvParams = [m['bpm'], m['ibi'], m['rmssd'], m['sdnn'], m['lf'], m['hf'], m['lf/hf']]
+                    hrvParams = [ts_ecg]+hrvParams
+                newFileWriter.writerow(peaks_list)
+                df_ecgHRV = df_ecgHRV.append(pd.Series(hrvParams, index=df_ecgHRV.columns), ignore_index=True)
 
-        df_ecgHRV.to_csv(ecg_hrv, index=False)
-
-
+            # df_peaks.to_csv(ecg_peak, index=False)
+            df_ecgHRV.to_csv(ecg_hrv, index=False)
         
     print('\nFinished in %.8s sec' %(time.perf_counter()-start))
-
-        
-    print('\nFinished in %.8s sec' %(time.perf_counter()-start))
-
     
